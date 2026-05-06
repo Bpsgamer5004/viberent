@@ -172,16 +172,31 @@
     let activeUser = JSON.parse(localStorage.getItem('vibe_session')) || null;
     let pendingProp = null;
 
-    const defaultData = [
+   const defaultData = [
         { 
             id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
-            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
+            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
             rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
         },
         { 
             id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
-            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
+            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800",
             rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
+        },
+        { 
+            id: 3, name: "The Glass House", city: "Vizag", price: 32000, 
+            img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800",
+            rules: ["Professional cleaning monthly", "Garden maintenance included", "No loud music after 10 PM", "Electric vehicle charging only", "Strict waste segregation"]
+        },
+        { 
+            id: 4, name: "Urban Loft 101", city: "Vijayawada", price: 18500, 
+            img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800",
+            rules: ["Ideal for working bachelors", "24/7 Security Access", "High-speed Fiber included", "Bike parking only", "No charcoal grills on balcony"]
+        },
+        { 
+            id: 5, name: "Emerald Meadows", city: "Tirupati", price: 12000, 
+            img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
+            rules: ["Strictly Vegetarian only", "Traditional family preferred", "No overnight guests without notice", "Borewell & Municipal water available", "Temple view maintained"]
         }
     ];
 

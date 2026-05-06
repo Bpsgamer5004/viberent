@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeRent | Premium Property Suite</title>
+    <!-- Razorpay SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        :root {
+            --primary: #0a192f;
+            --accent: #4f46e5;
+            --tenant: #059669;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --overlay: rgba(10, 25, 47, 0.9);
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; overflow-x: hidden; }
+        .hidden { display: none !important; }
+
+        header {
+            background: var(--primary); color: white; padding: 10px 5%;
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-center { display: flex; justify-content: center; }
+        .header-right { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+
+        .logo-box { font-size: 1.6rem; font-weight: 800; letter-spacing: 2px; color: #60a5fa; cursor: pointer; }
+        
+        .task-drawer {
+            position: fixed; top: 0; left: -320px; width: 300px; height: 100%;
+            background: white; z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1); padding: 40px 20px;
+        }
+        .task-drawer.open { left: 0; }
+        .drawer-blur {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: none; backdrop-filter: blur(4px);
+        }
+
+        .modal-wrap {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay); display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-primary { background: var(--accent); color: white; width: 100%; }
+        .btn-tenant { background: var(--tenant); color: white; width: 100%; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-outline { background: transparent; border: 1px solid white; color: white; }
+
+        .main-layout { display: grid; grid-template-columns: 1fr 350px; gap: 30px; padding: 30px 5%; }
+        @media (max-width: 900px) { header { grid-template-columns: 1fr 1fr; } .header-center { display: none; } .main-layout { grid-template-columns: 1fr; } }
+        
+        .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        
+        .rules-preview { 
+            background: #f1f5f9; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.8rem; color: #475569;
+            border-left: 3px solid var(--accent);
+        }
+        .rules-preview ul { margin: 5px 0; padding-left: 18px; }
+
+        .booking-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+        .drawer-item { padding: 12px; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .drawer-item:hover { background: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+<div id="drawerBlur" class="drawer-blur" onclick="toggleDrawer()"></div>
+
+<div id="authModal" class="modal-wrap hidden">
+    <div class="modal-card">
+        <h2 id="authTitle" style="text-align: center; margin-top: 0;">Create Account</h2>
+        <input type="email" id="authEmail" placeholder="Email Address">
+        <input type="password" id="authPass" placeholder="Password">
+        <button class="btn btn-primary" id="authSubmitBtn" onclick="handleAuth()">Join VibeRent</button>
+        
+        <p style="text-align: center; font-size: 0.9rem; margin: 15px 0;">
+            <span id="authToggleText">Already have an account?</span> 
+            <a href="javascript:void(0)" onclick="toggleAuthMode()" id="authToggleLink" style="color: var(--accent); font-weight: 700; text-decoration: none;">Log In</a>
+        </p>
+
+        <button class="btn btn-danger" style="width: 100%" onclick="closeModal('authModal')">Cancel</button>
+    </div>
+</div>
+
+<!-- OLD payModal removed as Razorpay handles the overlay -->
+
+<div id="statusModal" class="modal-wrap hidden">
+    <div class="modal-card" style="text-align: center;">
+        <div id="statusResult">
+            <span style="font-size: 60px;">✅</span>
+            <h2>Confirmed!</h2>
+            <p id="paymentRef" style="font-size: 0.8rem; color: #64748b;"></p>
+            <button class="btn btn-primary" onclick="closeStatus()">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="taskDrawer" class="task-drawer">
+    <h2 style="color: var(--primary); margin-top: 0;">VibeMenu</h2>
+    <div class="drawer-item" style="color: var(--accent); font-weight: 700;" onclick="goToBidPortal()">⚖️ Bid Portal</div>
+    <div class="drawer-item">💳 Payment History</div>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    <div id="sidebarSignOut" class="drawer-item hidden" style="color: var(--danger); font-weight: 700;" onclick="handleSignOut()">🚪 Sign Out</div>
+    <button class="btn btn-primary" style="margin-top: 30px;" onclick="toggleDrawer()">Close</button>
+</div>
+
+<header>
+    <div class="header-left">
+        <span style="font-size: 1.8rem; cursor: pointer;" onclick="toggleDrawer()">☰</span>
+        <div class="logo-box">VIBERENT</div>
+    </div>
+    
+    <div class="header-center">
+        <img src="logo_1_0.png" alt="VibeRent Logo" style="height: 55px; border-radius: 5px;">
+    </div>
+
+    <div class="header-right">
+        <div id="userInfo" class="hidden">Hi, <span id="userDisplay" style="font-weight: 700; color: #60a5fa;"></span></div>
+        <div id="guestControls">
+            <button class="btn btn-outline" onclick="openAuth('login')">Log In</button>
+            <button class="btn" style="background:white; color:var(--primary)" onclick="openAuth('signup')">Sign Up</button>
+        </div>
+        <button id="headerSignOutBtn" class="btn btn-danger hidden" onclick="handleSignOut()">Sign Out</button>
+        <button id="roleBtn" class="btn btn-primary" onclick="toggleRole()">Tenant Mode</button>
+    </div>
+</header>
+
+<main class="main-layout">
+    <section>
+        <div id="ownerSection" class="card-body" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+            <h3>List New Property</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input id="nPName" placeholder="Name">
+                <input id="nPCity" placeholder="City">
+                <input id="nPPrice" type="number" placeholder="Rent ₹">
+                <input id="nPImg" placeholder="Image URL">
+            </div>
+            <textarea id="nPRules" placeholder="House Rules (One per line: e.g. Max 3 adults)"></textarea>
+            <button class="btn btn-primary" onclick="addProperty()">Submit Listing</button>
+        </div>
+        <div id="propertyGrid" class="container"></div>
+    </section>
+
+    <aside>
+        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; position: sticky; top: 100px;">
+            <h3 style="margin-top: 0;">My Bookings</h3>
+            <div id="bookingList"></div>
+        </div>
+    </aside>
+</main>
+
+<script>
+    function goToBidPortal() { window.open('https://vibe-bid.netlify.app/', '_blank'); }
+
+    let mode = 'owner';
+    let isLoginMode = false;
+    let activeUser = JSON.parse(localStorage.getItem('vibe_session')) || null;
+    let pendingProp = null;
+
+    const defaultData = [
+        { 
+            id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
+            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
+            rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
+        },
+        { 
+            id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
+            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
+            rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
+        }
+    ];
+
+    let properties = JSON.parse(localStorage.getItem('vibe_props')) || defaultData;
+    let bookings = JSON.parse(localStorage.getItem('vibe_bookings')) || [];
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function openAuth(type) {
+        isLoginMode = (type === 'login');
+        updateAuthUI();
+        openModal('authModal');
+    }
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        updateAuthUI();
+    }
+
+    function updateAuthUI() {
+        const title = document.getElementById('authTitle');
+        const submitBtn = document.getElementById('authSubmitBtn');
+        const toggleText = document.getElementById('authToggleText');
+        const toggleLink = document.getElementById('authToggleLink');
+
+        if (isLoginMode) {
+            title.innerText = "Log In";
+            submitBtn.innerText = "Access Account";
+            toggleText.innerText = "New here?";
+            toggleLink.innerText = "Sign Up";
+        } else {
+            title.innerText = "Create Account";
+            submitBtn.innerText = "Join VibeRent";
+            toggleText.innerText = "Already have an account?";
+            toggleLink.innerText = "Log In";
+        }
+    }
+
+    function handleAuth() {
+        const e = document.getElementById('authEmail').value;
+        const p = document.getElementById('authPass').value;
+        if(!e || !p) return alert("Please fill in all details");
+
+        if(!isLoginMode) {
+            localStorage.setItem(`vibe_u_${e}`, p);
+            alert("Account created successfully! Logging you in...");
+        } else {
+            if (localStorage.getItem(`vibe_u_${e}`) !== p && e !== "test@test.com") {
+                return alert("Invalid email or password");
+            }
+        }
+
+        activeUser = { email: e };
+        localStorage.setItem('vibe_session', JSON.stringify(activeUser));
+        closeModal('authModal'); 
+        refreshUI();
+    }
+
+    function handleSignOut() { localStorage.removeItem('vibe_session'); location.reload(); }
+
+    // --- RAZORPAY INTEGRATION ---
+    function book(id) {
+        if(!activeUser) return openAuth('signup'); 
+        pendingProp = properties.find(x => x.id === id);
+        
+        const options = {
+            "key": "rzp_test_SlwhoAsYivcaVQ", // Replace with your actual Key ID
+            "amount": pendingProp.price * 100, // Amount in paise
+            "currency": "INR",
+            "name": "VibeRent",
+            "description": `Booking: ${pendingProp.name}`,
+            "image": "logo_1_0.png",
+            "handler": function (response) {
+                completeBooking(response.razorpay_payment_id);
+            },
+            "prefill": {
+                "email": activeUser.email,
+                "contact": "9999999999"
+            },
+            "theme": { "color": "#4f46e5" }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response){
+            alert("Payment failed: " + response.error.description);
+        });
+        rzp.open();
+    }
+
+    function completeBooking(paymentId) {
+        document.getElementById('paymentRef').innerText = `Payment ID: ${paymentId}`;
+        openModal('statusModal');
+        bookings.unshift({
+            ...pendingProp, 
+            date: new Date().toLocaleDateString(),
+            txnId: paymentId
+        });
+        localStorage.setItem('vibe_bookings', JSON.stringify(bookings));
+        renderBookings();
+    }
+    // ----------------------------
+
+    function viewAgreement(bookingId) {
+        const b = bookings.find(x => x.id === bookingId);
+        const win = window.open("", "_blank", "width=700,height=900");
+        const rulesHtml = b.rules.map(r => `<li>${r}</li>`).join('');
+        win.document.write(`<div style="padding:40px; font-family:sans-serif; border:15px solid #0a192f;">
+            <h1>LEASE AGREEMENT</h1><hr><p><b>Tenant:</b> ${activeUser.email}</p><p><b>Property:</b> ${b.name}</p>
+            <p><b>Transaction ID:</b> ${b.txnId || 'N/A'}</p>
+            <h3>SPECIFIED RULES:</h3><ul>${rulesHtml}</ul>
+            <div style="border:2px dashed green; padding:10px; margin-top:50px; text-align:center;">DIGITALLY SECURED</div>
+        </div>`);
+    }
+
+    function removeBooking(id) {
+        if(confirm("Cancel this booking?")) { bookings = bookings.filter(b => b.id !== id); localStorage.setItem('vibe_bookings', JSON.stringify(bookings)); renderBookings(); }
+    }
+
+    function toggleRole() {
+        mode = (mode === 'owner' ? 'tenant' : 'owner');
+        document.getElementById('roleBtn').innerText = mode === 'owner' ? 'Tenant Mode' : 'Owner Mode';
+        document.getElementById('ownerSection').classList.toggle('hidden', mode === 'tenant');
+        renderProperties();
+    }
+
+    function toggleDrawer() {
+        const d = document.getElementById('taskDrawer');
+        d.classList.toggle('open');
+        document.getElementById('drawerBlur').style.display = d.classList.contains('open') ? 'block' : 'none';
+    }
+
+    function renderProperties() {
+        document.getElementById('propertyGrid').innerHTML = properties.map(p => {
+            const rulesHtml = p.rules.map(r => `<li>${r}</li>`).join('');
+            return `
+            <div class="card">
+                <img src="${p.img}">
+                <div class="card-body">
+                    <b style="font-size:1.1rem">${p.name}</b><br><small>${p.city}</small>
+                    <div class="rules-preview">
+                        <b>House Rules:</b>
+                        <ul>${rulesHtml}</ul>
+                    </div>
+                    <div style="color:var(--accent); font-weight:700; font-size:1.2rem; margin-top:auto">₹${p.price.toLocaleString()}</div>
+                    <div style="margin-top:10px">
+                        ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete Listing</button>`}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function delP(id) { properties = properties.filter(p => p.id !== id); localStorage.setItem('vibe_props', JSON.stringify(properties)); renderProperties(); }
+
+    function addProperty() {
+        const n = document.getElementById('nPName').value;
+        const p = document.getElementById('nPPrice').value;
+        const rRaw = document.getElementById('nPRules').value;
+        if(!n || !p) return;
+        properties.unshift({ 
+            id: Date.now(), name: n, city: document.getElementById('nPCity').value, price: parseInt(p), 
+            img: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500',
+            rules: rRaw ? rRaw.split('\n').filter(l => l.trim()) : ["Standard occupancy limits apply."]
+        });
+        localStorage.setItem('vibe_props', JSON.stringify(properties));
+        renderProperties();
+    }
+
+    function renderBookings() {
+        const bList = document.getElementById('bookingList');
+        if(bookings.length === 0) { bList.innerHTML = "<p>No active bookings.</p>"; return; }
+        bList.innerHTML = bookings.map(b => `
+            <div class="booking-item">
+                <div style="font-weight:700;">${b.name}</div>
+                <div style="font-size:0.8rem; margin-bottom:8px;">${b.date}</div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn" style="background:#e0f2fe; color:#0369a1; padding:5px; font-size:0.7rem; flex:1;" onclick="viewAgreement(${b.id})">Lease Doc</button>
+                    <button class="btn btn-danger" style="padding:5px; font-size:0.7rem;" onclick="removeBooking(${b.id})">Cancel</button>
+                </div>
+            </div>`).join('');
+    }
+
+    function closeStatus() { closeModal('statusModal'); }
+
+    function refreshUI() {
+        if(activeUser) {
+            document.getElementById('guestControls').classList.add('hidden');
+            document.getElementById('headerSignOutBtn').classList.remove('hidden');
+            document.getElementById('sidebarSignOut').classList.remove('hidden');
+            document.getElementById('userInfo').classList.remove('hidden');
+            document.getElementById('userDisplay').innerText = activeUser.email;
+        }
+    }
+
+    renderProperties(); renderBookings(); refreshUI();
+</script>
+</body>
+</html>

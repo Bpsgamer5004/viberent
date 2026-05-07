@@ -49,7 +49,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay); display: flex; align-items: center; justify-content: center; z-index: 2000;
         }
-        .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto; }
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
 
         .team-badge {
@@ -67,8 +67,9 @@
         @media (max-width: 900px) { header { grid-template-columns: 1fr 1fr; } .header-center { display: none; } .main-layout { grid-template-columns: 1fr; } }
         
         .container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
         .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         
         .rules-preview { 
@@ -96,7 +97,7 @@
                 <div style="font-weight: 700;">B. Pawan Sai</div>
             </div>
             <div class="team-badge" style="border-left-color: #10b981;">
-                <div class="role-label">Representative & Testing</div>
+                <div class="role-label">Creative Lead / Tester</div>
                 <div style="font-weight: 700;">B.V. Bhargavi</div>
             </div>
             <div class="team-badge" style="border-left-color: #f59e0b;">
@@ -157,7 +158,7 @@
         <div class="logo-box">VIBERENT</div>
     </div>
     <div class="header-center">
-        <img src="logo_1_0.png" alt="VibeRent Logo" style="height: 55px; border-radius: 5px;">
+        <div style="background: white; padding: 5px; border-radius: 8px; font-weight: 900; color: var(--primary); border: 2px solid #60a5fa;">VR</div>
     </div>
     <div class="header-right">
         <div id="userInfo" class="hidden">Hi, <span id="userDisplay" style="font-weight: 700; color: #60a5fa;"></span></div>
@@ -210,13 +211,53 @@
     const defaultData = [
         { 
             id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
-            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
-            rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
+            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600",
+            rules: ["Max occupancy: 4 people", "No smoking inside", "1-month deposit required"]
         },
         { 
             id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
-            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
-            rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
+            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600",
+            rules: ["Max 5 residents", "Subletting forbidden", "Small pets okay"]
+        },
+        { 
+            id: 3, name: "Ocean Breeze Apt", city: "Vizag", price: 28000, 
+            img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600",
+            rules: ["No loud music after 10 PM", "Bachelor friendly", "Sea view balcony"]
+        },
+        { 
+            id: 4, name: "Urban Loft", city: "Bangalore", price: 35000, 
+            img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600",
+            rules: ["Company lease preferred", "EV charging available", "No drilling walls"]
+        },
+        { 
+            id: 5, name: "Green View Residency", city: "Vijayawada", price: 12000, 
+            img: "https://images.unsplash.com/photo-1448630360428-654765c3339d?w=600",
+            rules: ["Vegetarians only", "Gated community", "24/7 water supply"]
+        },
+        { 
+            id: 6, name: "Royal Heritage Suite", city: "Jaipur", price: 55000, 
+            img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600",
+            rules: ["Professional maintenance included", "No commercial activity", "6 months lock-in"]
+        },
+        { 
+            id: 7, name: "Creek Side Cottage", city: "Kochi", price: 20000, 
+            img: "https://images.unsplash.com/photo-1464890100898-a385f744067f?w=600",
+            rules: ["Waste segregation mandatory", "Garden access", "Quiet zone"]
+        },
+        { 
+            id: 8, name: "Metro Heights", city: "Mumbai", price: 75000, 
+            img: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=600",
+            rules: ["Verification required", "Centralized AC", "No pets allowed"]
+        },
+        { 
+            id: 9, name: "Palm Grove Villa", city: "Chennai", price: 42000, 
+            img: "https://images.unsplash.com/photo-1513584684031-ad3673967f46?w=600",
+            rules: ["Parking for 2 cars", "Security deposit 3 months", "Solar backup"]
+        },
+        { 
+            id: 10, name: "The Hive Studio", city: "Pune", price: 18000, 
+            img: "https://images.unsplash.com/photo-1536376074432-8d64216afe74?w=600",
+            rules: ["Working professionals only", "Fully furnished", "Internet included"]
         }
     ];
 
@@ -320,16 +361,16 @@
 
     function renderProperties(dataToRender = properties) {
         const grid = document.getElementById('propertyGrid');
-        if (dataToRender.length === 0) { grid.innerHTML = `<p>No properties found.</p>`; return; }
+        if (dataToRender.length === 0) { grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 20px;">No properties found.</p>`; return; }
         grid.innerHTML = dataToRender.map(p => `
             <div class="card">
                 <img src="${p.img}">
                 <div class="card-body">
-                    <b>${p.name}</b><br><small>${p.city}</small>
+                    <b style="font-size: 1.1rem;">${p.name}</b><br><small style="color: #64748b;">${p.city}</small>
                     <div class="rules-preview"><b>House Rules:</b><ul>${p.rules.map(r => `<li>${r}</li>`).join('')}</ul></div>
                     <div style="color:var(--accent); font-weight:700; font-size:1.2rem; margin-top:auto">₹${p.price.toLocaleString()}</div>
                     <div style="margin-top:10px">
-                        ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete</button>`}
+                        ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete Listing</button>`}
                     </div>
                 </div>
             </div>`).join('');
@@ -339,17 +380,32 @@
 
     function addProperty() {
         const n = document.getElementById('nPName').value;
+        const c = document.getElementById('nPCity').value;
         const p = document.getElementById('nPPrice').value;
+        const i = document.getElementById('nPImg').value;
+        const rRaw = document.getElementById('nPRules').value;
         if(!n || !p) return;
-        properties.unshift({ id: Date.now(), name: n, city: document.getElementById('nPCity').value, price: parseInt(p), img: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500', rules: ["Standard occupancy applies"] });
+        properties.unshift({ 
+            id: Date.now(), 
+            name: n, 
+            city: c || "Unknown City", 
+            price: parseInt(p), 
+            img: i || 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=600', 
+            rules: rRaw ? rRaw.split('\n').filter(l => l.trim()) : ["Standard occupancy applies"] 
+        });
         localStorage.setItem('vibe_props', JSON.stringify(properties));
         renderProperties();
+        document.getElementById('nPName').value = '';
+        document.getElementById('nPCity').value = '';
+        document.getElementById('nPPrice').value = '';
+        document.getElementById('nPImg').value = '';
+        document.getElementById('nPRules').value = '';
     }
 
     function renderBookings() {
         const bList = document.getElementById('bookingList');
         if(bookings.length === 0) { bList.innerHTML = "<p>No active bookings.</p>"; return; }
-        bList.innerHTML = bookings.map(b => `<div class="booking-item"><b>${b.name}</b><br><button class="btn btn-danger" style="padding:5px; font-size:0.7rem;" onclick="removeBooking(${b.id})">Cancel</button></div>`).join('');
+        bList.innerHTML = bookings.map(b => `<div class="booking-item"><b>${b.name}</b><br><button class="btn btn-danger" style="padding:5px; font-size:0.7rem; margin-top:5px;" onclick="removeBooking(${b.id})">Cancel</button></div>`).join('');
     }
 
     function closeStatus() { closeModal('statusModal'); }

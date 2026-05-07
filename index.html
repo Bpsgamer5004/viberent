@@ -52,12 +52,10 @@
         .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
 
-        /* Search Bar Focus Style */
-        #propertySearch:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        .team-badge {
+            padding: 12px; background: #f1f5f9; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent);
         }
+        .role-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 800; margin-bottom: 2px; }
 
         .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: var(--accent); color: white; width: 100%; }
@@ -88,18 +86,46 @@
 
 <div id="drawerBlur" class="drawer-blur" onclick="toggleDrawer()"></div>
 
+<!-- Team Credits Modal -->
+<div id="teamModal" class="modal-wrap hidden">
+    <div class="modal-card">
+        <h2 style="text-align: center; margin-top: 0; color: var(--primary);">Developer Team</h2>
+        <div style="margin: 20px 0;">
+            <div class="team-badge" style="border-left-color: #60a5fa;">
+                <div class="role-label">Leader / Animator / Prompter</div>
+                <div style="font-weight: 700;">B. Pawan Sai</div>
+            </div>
+            <div class="team-badge" style="border-left-color: #10b981;">
+                <div class="role-label">Representative & Testing</div>
+                <div style="font-weight: 700;">B.V. Bhargavi</div>
+            </div>
+            <div class="team-badge" style="border-left-color: #f59e0b;">
+                <div class="role-label">CSS Developer</div>
+                <div style="font-weight: 700;">M. Spandana</div>
+            </div>
+            <div class="team-badge" style="border-left-color: #ef4444;">
+                <div class="role-label">JavaScript Developer</div>
+                <div style="font-weight: 700;">Y. Sarayu</div>
+            </div>
+            <div class="team-badge" style="border-left-color: var(--primary);">
+                <div class="role-label">HTML Developer</div>
+                <div style="font-weight: 700;">S. Jayanth</div>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="closeModal('teamModal')">Close</button>
+    </div>
+</div>
+
 <div id="authModal" class="modal-wrap hidden">
     <div class="modal-card">
         <h2 id="authTitle" style="text-align: center; margin-top: 0;">Create Account</h2>
         <input type="email" id="authEmail" placeholder="Email Address">
         <input type="password" id="authPass" placeholder="Password">
         <button class="btn btn-primary" id="authSubmitBtn" onclick="handleAuth()">Join VibeRent</button>
-        
         <p style="text-align: center; font-size: 0.9rem; margin: 15px 0;">
             <span id="authToggleText">Already have an account?</span> 
             <a href="javascript:void(0)" onclick="toggleAuthMode()" id="authToggleLink" style="color: var(--accent); font-weight: 700; text-decoration: none;">Log In</a>
         </p>
-
         <button class="btn btn-danger" style="width: 100%" onclick="closeModal('authModal')">Cancel</button>
     </div>
 </div>
@@ -118,6 +144,7 @@
 <div id="taskDrawer" class="task-drawer">
     <h2 style="color: var(--primary); margin-top: 0;">VibeMenu</h2>
     <div class="drawer-item" style="color: var(--accent); font-weight: 700;" onclick="goToBidPortal()">⚖️ Bid Portal</div>
+    <div class="drawer-item" style="color: #6366f1; font-weight: 700;" onclick="openModal('teamModal')">👥 Team Credits</div>
     <div class="drawer-item">💳 Payment History</div>
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
     <div id="sidebarSignOut" class="drawer-item hidden" style="color: var(--danger); font-weight: 700;" onclick="handleSignOut()">🚪 Sign Out</div>
@@ -129,11 +156,9 @@
         <span style="font-size: 1.8rem; cursor: pointer;" onclick="toggleDrawer()">☰</span>
         <div class="logo-box">VIBERENT</div>
     </div>
-    
     <div class="header-center">
         <img src="logo_1_0.png" alt="VibeRent Logo" style="height: 55px; border-radius: 5px;">
     </div>
-
     <div class="header-right">
         <div id="userInfo" class="hidden">Hi, <span id="userDisplay" style="font-weight: 700; color: #60a5fa;"></span></div>
         <div id="guestControls">
@@ -147,13 +172,11 @@
 
 <main class="main-layout">
     <section>
-        <!-- NEW SEARCH BAR -->
         <div class="search-container" style="margin-bottom: 25px;">
-            <input type="text" id="propertySearch" placeholder="🔍 Search by property name or city..." 
+            <input type="text" id="propertySearch" placeholder="🔍 Search properties by name or city..." 
                    onkeyup="handleSearch()" 
-                   style="padding: 15px; font-size: 1rem; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                   style="padding: 15px; font-size: 1.05rem; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         </div>
-
         <div id="ownerSection" class="card-body" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
             <h3>List New Property</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -184,24 +207,23 @@
     let activeUser = JSON.parse(localStorage.getItem('vibe_session')) || null;
     let pendingProp = null;
 
-    // 10 DEFAULT HOUSES
     const defaultData = [
-        { id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500", rules: ["Max occupancy: 4", "No smoking", "Parking: 1 spot"] },
-        { id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500", rules: ["Max 5 residents", "No heavy drilling", "Small pets okay"] },
-        { id: 3, name: "Ocean Breeze Studio", city: "Vizag", price: 12000, img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500", rules: ["Bachelor friendly", "Beachfront", "No parties"] },
-        { id: 4, name: "Green Valley Mansion", city: "Bangalore", price: 85000, img: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=500", rules: ["High security", "Private Pool", "Garden access"] },
-        { id: 5, name: "Cyber Hub Flat", city: "Gurgaon", price: 32000, img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500", rules: ["Walking to Metro", "Gym included", "15th Floor"] },
-        { id: 6, name: "Heritage Haveli", city: "Jaipur", price: 28000, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500", rules: ["Antique interior", "No wall painting", "Silent zone"] },
-        { id: 7, name: "Palm Grove Estate", city: "Chennai", price: 55000, img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500", rules: ["24/7 CCTV", "Rainwater system", "Near OMR"] },
-        { id: 8, name: "Mountain Cottage", city: "Manali", price: 18000, img: "https://images.unsplash.com/photo-1464146072230-91cabc968266?w=500", rules: ["Fireplace inside", "Woodwork", "Eco disposal"] },
-        { id: 9, name: "Marine Drive Flat", city: "Mumbai", price: 95000, img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=500", rules: ["Sea facing", "Elite society", "Parking: 2 spots"] },
-        { id: 10, name: "River Silk Residency", city: "Vijayawada", price: 22000, img: "https://images.unsplash.com/photo-1448630305451-91fd464445e3?w=500", rules: ["River view", "Modular kitchen", "Vegetarian preferred"] }
+        { 
+            id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
+            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
+            rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
+        },
+        { 
+            id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
+            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
+            rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
+        }
     ];
 
     let properties = JSON.parse(localStorage.getItem('vibe_props')) || defaultData;
     let bookings = JSON.parse(localStorage.getItem('vibe_bookings')) || [];
 
-    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); if(id === 'teamModal') toggleDrawer(); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     function openAuth(type) {
@@ -220,17 +242,12 @@
         const submitBtn = document.getElementById('authSubmitBtn');
         const toggleText = document.getElementById('authToggleText');
         const toggleLink = document.getElementById('authToggleLink');
-
         if (isLoginMode) {
-            title.innerText = "Log In";
-            submitBtn.innerText = "Access Account";
-            toggleText.innerText = "New here?";
-            toggleLink.innerText = "Sign Up";
+            title.innerText = "Log In"; submitBtn.innerText = "Access Account";
+            toggleText.innerText = "New here?"; toggleLink.innerText = "Sign Up";
         } else {
-            title.innerText = "Create Account";
-            submitBtn.innerText = "Join VibeRent";
-            toggleText.innerText = "Already have an account?";
-            toggleLink.innerText = "Log In";
+            title.innerText = "Create Account"; submitBtn.innerText = "Join VibeRent";
+            toggleText.innerText = "Already have an account?"; toggleLink.innerText = "Log In";
         }
     }
 
@@ -238,30 +255,22 @@
         const e = document.getElementById('authEmail').value;
         const p = document.getElementById('authPass').value;
         if(!e || !p) return alert("Please fill in all details");
-
         if(!isLoginMode) {
             localStorage.setItem(`vibe_u_${e}`, p);
             alert("Account created successfully!");
         } else {
-            if (localStorage.getItem(`vibe_u_${e}`) !== p && e !== "test@test.com") {
-                return alert("Invalid credentials");
-            }
+            if (localStorage.getItem(`vibe_u_${e}`) !== p && e !== "test@test.com") return alert("Invalid credentials");
         }
         activeUser = { email: e };
         localStorage.setItem('vibe_session', JSON.stringify(activeUser));
-        closeModal('authModal'); 
-        refreshUI();
+        closeModal('authModal'); refreshUI();
     }
 
     function handleSignOut() { localStorage.removeItem('vibe_session'); location.reload(); }
 
-    // SEARCH LOGIC
     function handleSearch() {
         const query = document.getElementById('propertySearch').value.toLowerCase();
-        const filtered = properties.filter(p => 
-            p.name.toLowerCase().includes(query) || 
-            p.city.toLowerCase().includes(query)
-        );
+        const filtered = properties.filter(p => p.name.toLowerCase().includes(query) || p.city.toLowerCase().includes(query));
         renderProperties(filtered);
     }
 
@@ -273,13 +282,11 @@
             "amount": pendingProp.price * 100,
             "currency": "INR",
             "name": "VibeRent",
-            "description": `Booking: ${pendingProp.name}`,
             "handler": function (response) { completeBooking(response.razorpay_payment_id); },
             "prefill": { "email": activeUser.email },
             "theme": { "color": "#4f46e5" }
         };
-        const rzp = new Razorpay(options);
-        rzp.open();
+        const rzp = new Razorpay(options); rzp.open();
     }
 
     function completeBooking(paymentId) {
@@ -292,15 +299,11 @@
 
     function viewAgreement(bookingId) {
         const b = bookings.find(x => x.id === bookingId);
-        const win = window.open("", "_blank", "width=600,height=800");
-        win.document.write(`<div style="padding:30px; font-family:sans-serif; border:10px solid #0a192f;">
-            <h1>LEASE AGREEMENT</h1><hr>
-            <p><b>Tenant:</b> ${activeUser.email}</p>
-            <p><b>Property:</b> ${b.name}</p>
-            <p><b>Txn ID:</b> ${b.txnId}</p>
-            <div style="border:1px dashed #ccc; padding:10px; margin-top:20px;">DIGITAL SIGNATURE SECURED</div>
-        </div>`);
+        const win = window.open("", "_blank", "width=700,height=800");
+        win.document.write(`<div style="padding:40px; font-family:sans-serif; border:10px solid var(--primary);"><h1>LEASE AGREEMENT</h1><hr><p><b>Tenant:</b> ${activeUser.email}</p><p><b>Property:</b> ${b.name}</p><p><b>Txn ID:</b> ${b.txnId}</p></div>`);
     }
+
+    function removeBooking(id) { if(confirm("Cancel booking?")) { bookings = bookings.filter(b => b.id !== id); localStorage.setItem('vibe_bookings', JSON.stringify(bookings)); renderBookings(); } }
 
     function toggleRole() {
         mode = (mode === 'owner' ? 'tenant' : 'owner');
@@ -317,17 +320,14 @@
 
     function renderProperties(dataToRender = properties) {
         const grid = document.getElementById('propertyGrid');
-        if (dataToRender.length === 0) {
-            grid.innerHTML = `<h3 style="grid-column: 1/-1; text-align:center;">No results found.</h3>`;
-            return;
-        }
+        if (dataToRender.length === 0) { grid.innerHTML = `<p>No properties found.</p>`; return; }
         grid.innerHTML = dataToRender.map(p => `
             <div class="card">
                 <img src="${p.img}">
                 <div class="card-body">
                     <b>${p.name}</b><br><small>${p.city}</small>
-                    <div class="rules-preview"><b>Rules:</b><ul>${p.rules.map(r=>`<li>${r}</li>`).join('')}</ul></div>
-                    <div style="color:var(--accent); font-weight:700;">₹${p.price.toLocaleString()}</div>
+                    <div class="rules-preview"><b>House Rules:</b><ul>${p.rules.map(r => `<li>${r}</li>`).join('')}</ul></div>
+                    <div style="color:var(--accent); font-weight:700; font-size:1.2rem; margin-top:auto">₹${p.price.toLocaleString()}</div>
                     <div style="margin-top:10px">
                         ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete</button>`}
                     </div>
@@ -340,14 +340,8 @@
     function addProperty() {
         const n = document.getElementById('nPName').value;
         const p = document.getElementById('nPPrice').value;
-        const c = document.getElementById('nPCity').value;
-        const r = document.getElementById('nPRules').value;
         if(!n || !p) return;
-        properties.unshift({ 
-            id: Date.now(), name: n, city: c, price: parseInt(p), 
-            img: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500',
-            rules: r ? r.split('\n') : ["Standard limits apply"]
-        });
+        properties.unshift({ id: Date.now(), name: n, city: document.getElementById('nPCity').value, price: parseInt(p), img: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500', rules: ["Standard occupancy applies"] });
         localStorage.setItem('vibe_props', JSON.stringify(properties));
         renderProperties();
     }
@@ -355,14 +349,7 @@
     function renderBookings() {
         const bList = document.getElementById('bookingList');
         if(bookings.length === 0) { bList.innerHTML = "<p>No active bookings.</p>"; return; }
-        bList.innerHTML = bookings.map(b => `
-            <div class="booking-item">
-                <div style="font-weight:700;">${b.name}</div>
-                <div style="font-size:0.7rem;">${b.date}</div>
-                <div style="margin-top:5px;">
-                    <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem;" onclick="viewAgreement(${b.id})">Lease</button>
-                </div>
-            </div>`).join('');
+        bList.innerHTML = bookings.map(b => `<div class="booking-item"><b>${b.name}</b><br><button class="btn btn-danger" style="padding:5px; font-size:0.7rem;" onclick="removeBooking(${b.id})">Cancel</button></div>`).join('');
     }
 
     function closeStatus() { closeModal('statusModal'); }

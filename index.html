@@ -52,7 +52,7 @@
         .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
 
-        /* Search Bar Specific CSS */
+        /* Search Bar Focus Style */
         #propertySearch:focus {
             outline: none;
             border-color: var(--accent);
@@ -147,11 +147,11 @@
 
 <main class="main-layout">
     <section>
-        <!-- Search Bar Section -->
+        <!-- NEW SEARCH BAR -->
         <div class="search-container" style="margin-bottom: 25px;">
-            <input type="text" id="propertySearch" placeholder="🔍 Search properties by name or city..." 
+            <input type="text" id="propertySearch" placeholder="🔍 Search by property name or city..." 
                    onkeyup="handleSearch()" 
-                   style="padding: 15px; font-size: 1.05rem; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                   style="padding: 15px; font-size: 1rem; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
         </div>
 
         <div id="ownerSection" class="card-body" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
@@ -184,17 +184,18 @@
     let activeUser = JSON.parse(localStorage.getItem('vibe_session')) || null;
     let pendingProp = null;
 
+    // 10 DEFAULT HOUSES
     const defaultData = [
-        { 
-            id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
-            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
-            rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
-        },
-        { 
-            id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
-            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
-            rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
-        }
+        { id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500", rules: ["Max occupancy: 4", "No smoking", "Parking: 1 spot"] },
+        { id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500", rules: ["Max 5 residents", "No heavy drilling", "Small pets okay"] },
+        { id: 3, name: "Ocean Breeze Studio", city: "Vizag", price: 12000, img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500", rules: ["Bachelor friendly", "Beachfront", "No parties"] },
+        { id: 4, name: "Green Valley Mansion", city: "Bangalore", price: 85000, img: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=500", rules: ["High security", "Private Pool", "Garden access"] },
+        { id: 5, name: "Cyber Hub Flat", city: "Gurgaon", price: 32000, img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500", rules: ["Walking to Metro", "Gym included", "15th Floor"] },
+        { id: 6, name: "Heritage Haveli", city: "Jaipur", price: 28000, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500", rules: ["Antique interior", "No wall painting", "Silent zone"] },
+        { id: 7, name: "Palm Grove Estate", city: "Chennai", price: 55000, img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500", rules: ["24/7 CCTV", "Rainwater system", "Near OMR"] },
+        { id: 8, name: "Mountain Cottage", city: "Manali", price: 18000, img: "https://images.unsplash.com/photo-1464146072230-91cabc968266?w=500", rules: ["Fireplace inside", "Woodwork", "Eco disposal"] },
+        { id: 9, name: "Marine Drive Flat", city: "Mumbai", price: 95000, img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=500", rules: ["Sea facing", "Elite society", "Parking: 2 spots"] },
+        { id: 10, name: "River Silk Residency", city: "Vijayawada", price: 22000, img: "https://images.unsplash.com/photo-1448630305451-91fd464445e3?w=500", rules: ["River view", "Modular kitchen", "Vegetarian preferred"] }
     ];
 
     let properties = JSON.parse(localStorage.getItem('vibe_props')) || defaultData;
@@ -240,13 +241,12 @@
 
         if(!isLoginMode) {
             localStorage.setItem(`vibe_u_${e}`, p);
-            alert("Account created successfully! Logging you in...");
+            alert("Account created successfully!");
         } else {
             if (localStorage.getItem(`vibe_u_${e}`) !== p && e !== "test@test.com") {
-                return alert("Invalid email or password");
+                return alert("Invalid credentials");
             }
         }
-
         activeUser = { email: e };
         localStorage.setItem('vibe_session', JSON.stringify(activeUser));
         closeModal('authModal'); 
@@ -255,6 +255,7 @@
 
     function handleSignOut() { localStorage.removeItem('vibe_session'); location.reload(); }
 
+    // SEARCH LOGIC
     function handleSearch() {
         const query = document.getElementById('propertySearch').value.toLowerCase();
         const filtered = properties.filter(p => 
@@ -267,57 +268,38 @@
     function book(id) {
         if(!activeUser) return openAuth('signup'); 
         pendingProp = properties.find(x => x.id === id);
-        
         const options = {
             "key": "rzp_test_SlwhoAsYivcaVQ",
             "amount": pendingProp.price * 100,
             "currency": "INR",
             "name": "VibeRent",
             "description": `Booking: ${pendingProp.name}`,
-            "image": "logo_1_0.png",
-            "handler": function (response) {
-                completeBooking(response.razorpay_payment_id);
-            },
-            "prefill": {
-                "email": activeUser.email,
-                "contact": "9999999999"
-            },
+            "handler": function (response) { completeBooking(response.razorpay_payment_id); },
+            "prefill": { "email": activeUser.email },
             "theme": { "color": "#4f46e5" }
         };
-
         const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function (response){
-            alert("Payment failed: " + response.error.description);
-        });
         rzp.open();
     }
 
     function completeBooking(paymentId) {
         document.getElementById('paymentRef').innerText = `Payment ID: ${paymentId}`;
         openModal('statusModal');
-        bookings.unshift({
-            ...pendingProp, 
-            date: new Date().toLocaleDateString(),
-            txnId: paymentId
-        });
+        bookings.unshift({ ...pendingProp, date: new Date().toLocaleDateString(), txnId: paymentId });
         localStorage.setItem('vibe_bookings', JSON.stringify(bookings));
         renderBookings();
     }
 
     function viewAgreement(bookingId) {
         const b = bookings.find(x => x.id === bookingId);
-        const win = window.open("", "_blank", "width=700,height=900");
-        const rulesHtml = b.rules.map(r => `<li>${r}</li>`).join('');
-        win.document.write(`<div style="padding:40px; font-family:sans-serif; border:15px solid #0a192f;">
-            <h1>LEASE AGREEMENT</h1><hr><p><b>Tenant:</b> ${activeUser.email}</p><p><b>Property:</b> ${b.name}</p>
-            <p><b>Transaction ID:</b> ${b.txnId || 'N/A'}</p>
-            <h3>SPECIFIED RULES:</h3><ul>${rulesHtml}</ul>
-            <div style="border:2px dashed green; padding:10px; margin-top:50px; text-align:center;">DIGITALLY SECURED</div>
+        const win = window.open("", "_blank", "width=600,height=800");
+        win.document.write(`<div style="padding:30px; font-family:sans-serif; border:10px solid #0a192f;">
+            <h1>LEASE AGREEMENT</h1><hr>
+            <p><b>Tenant:</b> ${activeUser.email}</p>
+            <p><b>Property:</b> ${b.name}</p>
+            <p><b>Txn ID:</b> ${b.txnId}</p>
+            <div style="border:1px dashed #ccc; padding:10px; margin-top:20px;">DIGITAL SIGNATURE SECURED</div>
         </div>`);
-    }
-
-    function removeBooking(id) {
-        if(confirm("Cancel this booking?")) { bookings = bookings.filter(b => b.id !== id); localStorage.setItem('vibe_bookings', JSON.stringify(bookings)); renderBookings(); }
     }
 
     function toggleRole() {
@@ -336,28 +318,21 @@
     function renderProperties(dataToRender = properties) {
         const grid = document.getElementById('propertyGrid');
         if (dataToRender.length === 0) {
-            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#64748b;"><h3>No properties found.</h3></div>`;
+            grid.innerHTML = `<h3 style="grid-column: 1/-1; text-align:center;">No results found.</h3>`;
             return;
         }
-
-        grid.innerHTML = dataToRender.map(p => {
-            const rulesHtml = p.rules.map(r => `<li>${r}</li>`).join('');
-            return `
+        grid.innerHTML = dataToRender.map(p => `
             <div class="card">
                 <img src="${p.img}">
                 <div class="card-body">
-                    <b style="font-size:1.1rem">${p.name}</b><br><small>${p.city}</small>
-                    <div class="rules-preview">
-                        <b>House Rules:</b>
-                        <ul>${rulesHtml}</ul>
-                    </div>
-                    <div style="color:var(--accent); font-weight:700; font-size:1.2rem; margin-top:auto">₹${p.price.toLocaleString()}</div>
+                    <b>${p.name}</b><br><small>${p.city}</small>
+                    <div class="rules-preview"><b>Rules:</b><ul>${p.rules.map(r=>`<li>${r}</li>`).join('')}</ul></div>
+                    <div style="color:var(--accent); font-weight:700;">₹${p.price.toLocaleString()}</div>
                     <div style="margin-top:10px">
-                        ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete Listing</button>`}
+                        ${mode === 'tenant' ? `<button class="btn btn-tenant" onclick="book(${p.id})">Book Now</button>` : `<button class="btn btn-danger" style="width:100%" onclick="delP(${p.id})">Delete</button>`}
                     </div>
                 </div>
-            </div>`;
-        }).join('');
+            </div>`).join('');
     }
 
     function delP(id) { properties = properties.filter(p => p.id !== id); localStorage.setItem('vibe_props', JSON.stringify(properties)); renderProperties(); }
@@ -365,17 +340,15 @@
     function addProperty() {
         const n = document.getElementById('nPName').value;
         const p = document.getElementById('nPPrice').value;
-        const rRaw = document.getElementById('nPRules').value;
+        const c = document.getElementById('nPCity').value;
+        const r = document.getElementById('nPRules').value;
         if(!n || !p) return;
         properties.unshift({ 
-            id: Date.now(), name: n, city: document.getElementById('nPCity').value, price: parseInt(p), 
+            id: Date.now(), name: n, city: c, price: parseInt(p), 
             img: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500',
-            rules: rRaw ? rRaw.split('\n').filter(l => l.trim()) : ["Standard occupancy limits apply."]
+            rules: r ? r.split('\n') : ["Standard limits apply"]
         });
         localStorage.setItem('vibe_props', JSON.stringify(properties));
-        document.getElementById('nPName').value = '';
-        document.getElementById('nPPrice').value = '';
-        document.getElementById('nPRules').value = '';
         renderProperties();
     }
 
@@ -385,10 +358,9 @@
         bList.innerHTML = bookings.map(b => `
             <div class="booking-item">
                 <div style="font-weight:700;">${b.name}</div>
-                <div style="font-size:0.8rem; margin-bottom:8px;">${b.date}</div>
-                <div style="display:flex; gap:5px;">
-                    <button class="btn" style="background:#e0f2fe; color:#0369a1; padding:5px; font-size:0.7rem; flex:1;" onclick="viewAgreement(${b.id})">Lease Doc</button>
-                    <button class="btn btn-danger" style="padding:5px; font-size:0.7rem;" onclick="removeBooking(${b.id})">Cancel</button>
+                <div style="font-size:0.7rem;">${b.date}</div>
+                <div style="margin-top:5px;">
+                    <button class="btn btn-primary" style="padding:4px 8px; font-size:0.7rem;" onclick="viewAgreement(${b.id})">Lease</button>
                 </div>
             </div>`).join('');
     }

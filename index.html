@@ -52,6 +52,13 @@
         .modal-card { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
 
+        /* Search Bar Specific CSS */
+        #propertySearch:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
         .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: var(--accent); color: white; width: 100%; }
         .btn-tenant { background: var(--tenant); color: white; width: 100%; }
@@ -97,8 +104,6 @@
     </div>
 </div>
 
-<!-- OLD payModal removed as Razorpay handles the overlay -->
-
 <div id="statusModal" class="modal-wrap hidden">
     <div class="modal-card" style="text-align: center;">
         <div id="statusResult">
@@ -142,6 +147,13 @@
 
 <main class="main-layout">
     <section>
+        <!-- Search Bar Section -->
+        <div class="search-container" style="margin-bottom: 25px;">
+            <input type="text" id="propertySearch" placeholder="🔍 Search properties by name or city..." 
+                   onkeyup="handleSearch()" 
+                   style="padding: 15px; font-size: 1.05rem; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        </div>
+
         <div id="ownerSection" class="card-body" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
             <h3>List New Property</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -172,31 +184,16 @@
     let activeUser = JSON.parse(localStorage.getItem('vibe_session')) || null;
     let pendingProp = null;
 
-   const defaultData = [
+    const defaultData = [
         { 
             id: 1, name: "Skyline Penthouse", city: "Hyderabad", price: 45000, 
-            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
+            img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500",
             rules: ["Max occupancy: 4 people", "No smoking inside", "Parking: 1 spot only", "1-month deposit required", "No parties allowed"]
         },
         { 
             id: 2, name: "Lotus Garden Villa", city: "Guntur", price: 15000, 
-            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800",
+            img: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500",
             rules: ["Max 5 residents", "Tenant pays water tax", "Subletting forbidden", "No heavy wall drilling", "Small pets okay"]
-        },
-        { 
-            id: 3, name: "The Glass House", city: "Vizag", price: 32000, 
-            img: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800",
-            rules: ["Professional cleaning monthly", "Garden maintenance included", "No loud music after 10 PM", "Electric vehicle charging only", "Strict waste segregation"]
-        },
-        { 
-            id: 4, name: "Urban Loft 101", city: "Vijayawada", price: 18500, 
-            img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800",
-            rules: ["Ideal for working bachelors", "24/7 Security Access", "High-speed Fiber included", "Bike parking only", "No charcoal grills on balcony"]
-        },
-        { 
-            id: 5, name: "Emerald Meadows", city: "Tirupati", price: 12000, 
-            img: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800",
-            rules: ["Strictly Vegetarian only", "Traditional family preferred", "No overnight guests without notice", "Borewell & Municipal water available", "Temple view maintained"]
         }
     ];
 
@@ -258,14 +255,22 @@
 
     function handleSignOut() { localStorage.removeItem('vibe_session'); location.reload(); }
 
-    // --- RAZORPAY INTEGRATION ---
+    function handleSearch() {
+        const query = document.getElementById('propertySearch').value.toLowerCase();
+        const filtered = properties.filter(p => 
+            p.name.toLowerCase().includes(query) || 
+            p.city.toLowerCase().includes(query)
+        );
+        renderProperties(filtered);
+    }
+
     function book(id) {
         if(!activeUser) return openAuth('signup'); 
         pendingProp = properties.find(x => x.id === id);
         
         const options = {
-            "key": "rzp_test_SlwhoAsYivcaVQ", // Replace with your actual Key ID
-            "amount": pendingProp.price * 100, // Amount in paise
+            "key": "rzp_test_SlwhoAsYivcaVQ",
+            "amount": pendingProp.price * 100,
             "currency": "INR",
             "name": "VibeRent",
             "description": `Booking: ${pendingProp.name}`,
@@ -298,7 +303,6 @@
         localStorage.setItem('vibe_bookings', JSON.stringify(bookings));
         renderBookings();
     }
-    // ----------------------------
 
     function viewAgreement(bookingId) {
         const b = bookings.find(x => x.id === bookingId);
@@ -329,8 +333,14 @@
         document.getElementById('drawerBlur').style.display = d.classList.contains('open') ? 'block' : 'none';
     }
 
-    function renderProperties() {
-        document.getElementById('propertyGrid').innerHTML = properties.map(p => {
+    function renderProperties(dataToRender = properties) {
+        const grid = document.getElementById('propertyGrid');
+        if (dataToRender.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#64748b;"><h3>No properties found.</h3></div>`;
+            return;
+        }
+
+        grid.innerHTML = dataToRender.map(p => {
             const rulesHtml = p.rules.map(r => `<li>${r}</li>`).join('');
             return `
             <div class="card">
@@ -363,6 +373,9 @@
             rules: rRaw ? rRaw.split('\n').filter(l => l.trim()) : ["Standard occupancy limits apply."]
         });
         localStorage.setItem('vibe_props', JSON.stringify(properties));
+        document.getElementById('nPName').value = '';
+        document.getElementById('nPPrice').value = '';
+        document.getElementById('nPRules').value = '';
         renderProperties();
     }
 
